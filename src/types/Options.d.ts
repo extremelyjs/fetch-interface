@@ -1,3 +1,3 @@
 import { BaseOptions } from "./BaseOptions";
 
-export type Options = Omit<BaseOptions, "protocol", "host"> ;
+export type Options = BaseOptions;

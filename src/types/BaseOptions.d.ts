@@ -1,5 +1,7 @@
 export type Protocol = "HTTP" | "HTTPS";
 
+export type RESPONSE_VALUE = "blob" | "json" | "text" | "arrayBuffer" | "formData";
+
 export interface BaseOptions extends RequestInit {
     // 请求协议
     protocol: Protocol;
@@ -17,4 +19,5 @@ export interface BaseOptions extends RequestInit {
     onTimeout?: () => void;
     // 返回的数据里要拿做当value的key
     responseKey?: string;
+    responseData?: RESPONSE_VALUE;
 }

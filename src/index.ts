@@ -62,8 +62,28 @@ export function createFactory(config: BaseOptions) {
                     if (!res.ok) {
                         throw new Error(`HTTP error! status: ${res.status}`);
                     }
-                    const data: any = await res.json(); // 等待并解析JSON数据
-                    return data[config.responseKey ?? 'data'] as ReturnType; // 返回指定键的数据或默认'data'键的数据
+                    let data;
+                    const RESPONSE_VALUE = currentConfig?.responseData ?? config.responseData;
+                    if (RESPONSE_VALUE === "json") {
+                        data = await res.json();
+                    }
+                    if (RESPONSE_VALUE === "text") {
+                        data = await res.text();
+                    }
+                    if (RESPONSE_VALUE === "blob") {
+                        data = await res.blob();
+                    }
+                    if (RESPONSE_VALUE === "arrayBuffer") {
+                        data = await res.arrayBuffer();
+                    }
+                    if (RESPONSE_VALUE === "formData") {
+                        data = await res.formData();
+                    }
+                    const responseKey = currentConfig?.responseKey ?? config.responseKey;
+                    if (responseKey && RESPONSE_VALUE === "json") {
+                        return data[responseKey] as ReturnType;
+                    }
+                    return data as ReturnType;
                 } catch (error) {
                     throw error; // 重新抛出错误以便外部捕获
                 }
