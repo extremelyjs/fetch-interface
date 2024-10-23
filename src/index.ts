@@ -12,6 +12,16 @@ function decodeParams(params: any) {
     return String(params); // 确保返回的是字符串类型
 }
 
+// 新增函数：替换 URL 中的占位符
+function replaceUrlParams(url: string, params: any) {
+    if (params) {
+        Object.keys(params).forEach(key => {
+            url = url.replace(`{${key}}`, encodeURIComponent(String(params[key])));
+        });
+    }
+    return url;
+}
+
 export function createFactory(config: BaseOptions) {
     function createInterface<ReturnType, Params = any>(method: Method, url: string, currentConfig?: Options) { // 允许Params为任意类型
         return async function _createInterface(params: Params): Promise<ReturnType> {
@@ -22,9 +32,21 @@ export function createFactory(config: BaseOptions) {
                 ...config,
                 ...currentConfig,
             };
-
-            let fetchUrl = `${config.protocol}://${config.host}/${url}`;
-
+            let fetchUrl = `${config.protocol}://${config.host}/${replaceUrlParams(url, params)}`;
+            const urlParams = new URLSearchParams();
+            // 如果是 GET 或 HEAD 请求，并且有不在 URL 占位符中的额外参数，则拼接到 URL 上
+            if (method === 'GET' || method === 'HEAD') {
+                const urlParams = new URLSearchParams();
+                Object.keys(params as object).forEach(key => {
+                    if (!url.includes(`{${key}}`)) {
+                        // 如果参数未在 URL 占位符中替换过，则添加到查询字符串中
+                        urlParams.append(key, String(params[key as keyof Params]));
+                    }
+                });
+                if (urlParams.toString()) {
+                    fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + urlParams.toString();
+                }
+            }
             // 如果方法不是 GET 或 HEAD，则添加 body
             if (method !== 'GET' && method !== 'HEAD') {
                 fetchOptions.body = decodeParams(params);
@@ -32,11 +54,7 @@ export function createFactory(config: BaseOptions) {
                     ...fetchOptions?.headers,
                     ...currentConfig?.headers,
                 };
-            } else if (params) {
-                // 如果是 GET 或 HEAD 请求，并且有参数，通常将参数拼接到 URL 上
-                fetchUrl += '?' + new URLSearchParams(params as Record<string, string>).toString();
             }
-
             // 封装fetch请求，以便重试
             const fetchData = async () => {
                 try {
