@@ -1,6 +1,6 @@
 {
   "name": "@extremelyjs/fetch-interface",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a library for fetch",
   "main": "lib/index.js",
   "type": "module",
