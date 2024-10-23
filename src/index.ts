@@ -37,12 +37,14 @@ export function createFactory(config: BaseOptions) {
             // 如果是 GET 或 HEAD 请求，并且有不在 URL 占位符中的额外参数，则拼接到 URL 上
             if (method === 'GET' || method === 'HEAD') {
                 const urlParams = new URLSearchParams();
-                Object.keys(params as object).forEach(key => {
-                    if (!url.includes(`{${key}}`)) {
-                        // 如果参数未在 URL 占位符中替换过，则添加到查询字符串中
-                        urlParams.append(key, String(params[key as keyof Params]));
-                    }
-                });
+                if (params && typeof params === 'object' && !Array.isArray(params)) {
+                    Object.keys(params as object).forEach(key => {
+                        if (!url.includes(`{${key}}`)) {
+                            // 如果参数未在 URL 占位符中替换过，则添加到查询字符串中
+                            urlParams.append(key, String(params[key as keyof Params]));
+                        }
+                    });
+                }
                 if (urlParams.toString()) {
                     fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + urlParams.toString();
                 }
@@ -63,9 +65,13 @@ export function createFactory(config: BaseOptions) {
                         throw new Error(`HTTP error! status: ${res.status}`);
                     }
                     let data;
-                    const RESPONSE_VALUE = currentConfig?.responseData ?? config.responseData;
+                    const RESPONSE_VALUE = currentConfig?.responseData ?? config.responseData ?? "json";
                     if (RESPONSE_VALUE === "json") {
                         data = await res.json();
+                        const responseKey = currentConfig?.responseKey ?? config.responseKey;
+                        if (responseKey) {
+                            return data[responseKey] as ReturnType;
+                        }
                     }
                     if (RESPONSE_VALUE === "text") {
                         data = await res.text();
@@ -78,10 +84,6 @@ export function createFactory(config: BaseOptions) {
                     }
                     if (RESPONSE_VALUE === "formData") {
                         data = await res.formData();
-                    }
-                    const responseKey = currentConfig?.responseKey ?? config.responseKey;
-                    if (responseKey && RESPONSE_VALUE === "json") {
-                        return data[responseKey] as ReturnType;
                     }
                     return data as ReturnType;
                 } catch (error) {

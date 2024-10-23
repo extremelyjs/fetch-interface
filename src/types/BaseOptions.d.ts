@@ -4,9 +4,9 @@ export type RESPONSE_VALUE = "blob" | "json" | "text" | "arrayBuffer" | "formDat
 
 export interface BaseOptions extends RequestInit {
     // 请求协议
-    protocol: Protocol;
+    protocol?: Protocol;
     // 请求域名
-    host: string;
+    host?: string;
     // 重试次数
     retry?: number;
     // 重试间隔
