@@ -25,19 +25,26 @@ function replaceUrlParams(url: string, params: any) {
 export function createFactory(config: BaseOptions) {
     function createInterface<ReturnType, Params = any>(method: Method, url: string, currentConfig?: Options) { // 允许Params为任意类型
         return async function _createInterface(params: Params): Promise<ReturnType> {
-            // 动态获取 headers
+            if (!config) throw new Error('config is required');
+            // 确保 headers 函数被正确调用并展开
             const dynamicHeaders = typeof config.headers === 'function' ? config.headers() : config.headers;
-            const dynamicCurrentHeaders = typeof currentConfig?.headers === 'function' ? currentConfig.headers() : currentConfig?.headers;
-            // 准备 fetch 的选项
+            const dynamicCurrentHeaders = currentConfig && (typeof currentConfig.headers === 'function' ? currentConfig.headers() : currentConfig.headers);
+            const headers = {
+                ...(dynamicHeaders || {}),
+                ...(dynamicCurrentHeaders || {}),
+            };
+            // 确保 headers 不会被后续展开操作覆盖
             const fetchOptions: RequestInit = {
                 method,
-                headers: {
-                    ...(typeof dynamicHeaders === 'object' ? dynamicHeaders : {}),
-                    ...(typeof dynamicCurrentHeaders === 'object' ? dynamicCurrentHeaders : {}),
-                },
-                ...config,
-                ...currentConfig,
+                headers,
+                ...Object.fromEntries(
+                    Object.entries(config).filter(([key]) => key !== 'headers')
+                ),
+                ...Object.fromEntries(
+                    Object.entries(currentConfig || {}).filter(([key]) => key !== 'headers')
+                ),
             };
+            console.log('dep: ', fetchOptions);
             let fetchUrl = `${config.protocol}://${config.host}/${replaceUrlParams(url, params)}`;
             const urlParams = new URLSearchParams();
             // 如果是 GET 或 HEAD 请求，并且有不在 URL 占位符中的额外参数，则拼接到 URL 上
