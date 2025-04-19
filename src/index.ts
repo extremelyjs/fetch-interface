@@ -25,12 +25,15 @@ function replaceUrlParams(url: string, params: any) {
 export function createFactory(config: BaseOptions) {
     function createInterface<ReturnType, Params = any>(method: Method, url: string, currentConfig?: Options) { // 允许Params为任意类型
         return async function _createInterface(params: Params): Promise<ReturnType> {
+            // 动态获取 headers
+            const dynamicHeaders = typeof config.headers === 'function' ? config.headers() : config.headers;
+            const dynamicCurrentHeaders = typeof currentConfig?.headers === 'function' ? currentConfig.headers() : currentConfig?.headers;
             // 准备 fetch 的选项
             const fetchOptions: RequestInit = {
-                method: method,
+                method,
                 headers: {
-                    ...(typeof config.headers === 'object' ? config.headers : {}),
-                    ...(typeof currentConfig?.headers === 'object' ? currentConfig.headers : {}),
+                    ...(typeof dynamicHeaders === 'object' ? dynamicHeaders : {}),
+                    ...(typeof dynamicCurrentHeaders === 'object' ? dynamicCurrentHeaders : {}),
                 },
                 ...config,
                 ...currentConfig,
@@ -58,8 +61,8 @@ export function createFactory(config: BaseOptions) {
                 if (method !== 'GET' && method !== 'HEAD') {
                     fetchOptions.body = decodeParams(params);
                     fetchOptions.headers = {
-                        ...fetchOptions?.headers,
-                        ...currentConfig?.headers,
+                        ...fetchOptions?.headers as Record<string, string>,
+                        ...currentConfig?.headers as Record<string, string>
                     };
                 }
                 try {

@@ -14,7 +14,7 @@ export interface BaseOptions extends RequestInit {
     // 请求超时时间
     timeout?: number;
     // 请求头
-    headers?: Record<string, string>;
+    headers?: Record<string, string> | Function;
     // 超时之后要做的事情
     onTimeout?: () => void;
     // 返回的数据里要拿做当value的key
