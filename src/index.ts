@@ -44,7 +44,7 @@ export function createFactory(config: BaseOptions) {
                     Object.entries(currentConfig || {}).filter(([key]) => key !== 'headers')
                 ),
             };
-            console.log('dep: ', fetchOptions);
+
             let fetchUrl = `${config.protocol}://${config.host}/${replaceUrlParams(url, params)}`;
             const urlParams = new URLSearchParams();
             // 如果是 GET 或 HEAD 请求，并且有不在 URL 占位符中的额外参数，则拼接到 URL 上
