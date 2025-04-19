@@ -49,16 +49,16 @@ export function createFactory(config: BaseOptions) {
                     fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + urlParams.toString();
                 }
             }
-            // 如果方法不是 GET 或 HEAD，则添加 body
-            if (method !== 'GET' && method !== 'HEAD') {
-                fetchOptions.body = decodeParams(params);
-                fetchOptions.headers = {
-                    ...fetchOptions?.headers,
-                    ...currentConfig?.headers,
-                };
-            }
             // 封装fetch请求，以便重试
             const fetchData = async () => {
+                // 如果方法不是 GET 或 HEAD，则添加 body
+                if (method !== 'GET' && method !== 'HEAD') {
+                    fetchOptions.body = decodeParams(params);
+                    fetchOptions.headers = {
+                        ...fetchOptions?.headers,
+                        ...currentConfig?.headers,
+                    };
+                }
                 try {
                     const res = await fetch(fetchUrl, fetchOptions);
                     if (!res.ok) {
