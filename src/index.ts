@@ -28,7 +28,10 @@ export function createFactory(config: BaseOptions) {
             // 准备 fetch 的选项
             const fetchOptions: RequestInit = {
                 method: method,
-                headers: (currentConfig?.headers ?? config?.headers),
+                headers: {
+                    ...(typeof config.headers === 'object' ? config.headers : {}),
+                    ...(typeof currentConfig?.headers === 'object' ? currentConfig.headers : {}),
+                },
                 ...config,
                 ...currentConfig,
             };
